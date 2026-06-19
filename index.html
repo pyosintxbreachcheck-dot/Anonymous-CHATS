@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnonChat • Anonymous Groups</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+        
+        :root {
+            --primary: #6366f1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
+            color: #e0e0ff;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .screen {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+        
+        /* Home Screen */
+        .home {
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 40px;
+        }
+        
+        .hero {
+            max-width: 500px;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 600;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            color: #a0a0cc;
+            margin-bottom: 40px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 9999px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.5);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        /* Create & Join Screens */
+        .center-card {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+        }
+        
+        .card h2 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .card p {
+            text-align: center;
+            color: #a0a0cc;
+            margin-bottom: 32px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
+        
+        /* Chat Screen */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(15, 15, 30, 0.95);
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .chat-header {
+            padding: 16px 24px;
+            background: rgba(0,0,0,0.4);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .room-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .room-code {
+            background: rgba(99, 102, 241, 0.2);
+            color: #c4c4ff;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-family: monospace;
+            font-size: 1rem;
+            letter-spacing: 2px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scrollbar-width: thin;
+            scrollbar-color: #6366f1 #1f1f2e;
+        }
+        
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .message {
+            max-width: 75%;
+            animation: messageIn 0.3s ease forwards;
+        }
+        
+        .message.own {
+            align-self: flex-end;
+        }
+        
+        .message-content {
+            padding: 14px 20px;
+            border-radius: 20px;
+            position: relative;
+        }
+        
+        .message.own .message-content {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message:not(.own) .message-content {
+            background: rgba(255,255,255,0.1);
+            border-bottom-left-radius: 4px;
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+        
+        .timestamp {
+            font-size: 0.75rem;
+            opacity: 0.6;
+            margin-top: 4px;
+            text-align: right;
+        }
+        
+        .system {
+            align-self: center;
+            background: rgba(0,0,0,0.4);
+            padding: 8px 20px;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            color: #a0a0cc;
+        }
+        
+        .chat-input-area {
+            padding: 20px;
+            background: rgba(0,0,0,0.4);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 12px;
+        }
+        
+        #message-input {
+            flex: 1;
+            padding: 16px 24px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 9999px;
+            color: white;
+            font-size: 1.05rem;
+        }
+        
+        #message-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .send-btn {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+        
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: #1f1f2e;
+            border-radius: 20px;
+            padding: 32px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+        
+        @keyframes messageIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .glass {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(16px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="logo">AnonChat</div>
+            <div id="header-room" style="display: none; align-items: center; gap: 12px;">
+                <span style="font-size: 0.9rem; opacity: 0.7;">Room</span>
+                <div id="header-code" class="room-code" onclick="copyRoomCode()"></div>
+            </div>
+        </header>
+
+        <!-- HOME SCREEN -->
+        <div id="home-screen" class="screen active home">
+            <div class="hero">
+                <h1>Chat anonymously.<br>No accounts.<br>Ever.</h1>
+                <p>Temporary group chats. End-to-end private by design.</p>
+                
+                <div class="btn-group">
+                    <button onclick="createGroup()" class="btn-primary">
+                        <span>✦</span> Create Group
+                    </button>
+                    <button onclick="showJoinScreen()" class="btn-secondary">
+                        Join Existing
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CREATE SCREEN -->
+        <div id="create-screen" class="screen center-card">
+            <div class="card">
+                <h2>New Anonymous Room</h2>
+                <p>Your room code will be generated instantly</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <div id="generated-code" style="font-size: 3.5rem; font-family: monospace; letter-spacing: 8px; font-weight: 700; color: #c4c4ff; margin-bottom: 16px;"></div>
+                    <button onclick="copyGeneratedCode()" class="btn-secondary" style="width: 100%; justify-content: center;">
+                        📋 Copy Code
+                    </button>
+                </div>
+                
+                <div style="display: flex; gap: 12px;">
+                    <button onclick="joinCreatedRoom()" class="btn-primary" style="flex: 1;">
+                        Join This Room
+                    </button>
+                    <button onclick="backToHome()" class="btn-secondary" style="flex: 1;">
+                        Back
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- JOIN SCREEN -->
+        <div id="join-screen" class="screen center-card">
+            <div class="card">
+                <h2>Join Room</h2>
+                <p>Enter the 6-8 character room code</p>
+                
+                <input type="text" id="join-code-input" placeholder="e.g. X7K9P2" maxlength="8" style="text-transform: uppercase;">
+                
+                <button onclick="attemptJoin()" class="btn-primary" style="width: 100%;">
+                    Join Chat
+                </button>
+                
+                <button onclick="backToHome()" class="btn-secondary" style="width: 100%; margin-top: 12px;">
+                    Back to Home
+                </button>
+                
+                <div id="join-error" style="color: #ff6b6b; text-align: center; margin-top: 16px; display: none;"></div>
+            </div>
+        </div>
+
+        <!-- CHAT SCREEN -->
+        <div id="chat-screen" class="screen">
+            <div class="chat-container">
+                <!-- Chat Header -->
+                <div class="chat-header">
+                    <div class="room-info">
+                        <div onclick="showRoomInfo()" style="cursor: pointer;">
+                            <span id="chat-room-code" class="room-code"></span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <button onclick="leaveRoom()" style="background: rgba(255,100,100,0.2); color: #ff9999; padding: 8px 20px; font-size: 0.95rem; border-radius: 9999px;">
+                            Leave
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Messages -->
+                <div id="messages" class="chat-messages"></div>
+                
+                <!-- Input -->
+                <div class="chat-input-area">
+                    <div class="chat-input">
+                        <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
+                        <button onclick="sendMessage()" class="send-btn">↑</button>
+                    </div>
+                    <div style="text-align: center; margin-top: 12px; font-size: 0.75rem; opacity: 0.5;">
+                        Everyone is anonymous • Messages disappear when you leave
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NICKNAME MODAL -->
+    <div id="nickname-modal" class="modal">
+        <div class="modal-content glass">
+            <h3 style="margin-bottom: 20px;">Choose a nickname</h3>
+            <input type="text" id="nickname-input" placeholder="AnonymousUser42" maxlength="20" style="margin-bottom: 24px;">
+            <div style="display: flex; gap: 12px;">
+                <button onclick="setNickname()" class="btn-primary" style="flex: 1;">Continue</button>
+                <button onclick="hideNicknameModal()" class="btn-secondary" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROOM INFO MODAL -->
+    <div id="room-modal" class="modal">
+        <div class="modal-content glass">
+            <h3>Room Information</h3>
+            <div style="margin: 24px 0; text-align: left;">
+                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <span>Room Code</span>
+                    <span id="modal-room-code" style="font-family: monospace; font-weight: bold;"></span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <span>Participants</span>
+                    <span id="modal-participants">1 online</span>
+                </div>
+            </div>
+            <button onclick="hideRoomModal()" class="btn-secondary" style="width: 100%;">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // =============== STATE ===============
+        let currentRoomCode = null;
+        let currentNickname = null;
+        let messages = [];
+        let isOwnTab = true;
+        
+        // Simulated other users for demo (will be replaced with BroadcastChannel in full version)
+        let simulatedUsers = ["PixelFox", "ShadowByte", "LunaVoid", "NeonGhost"];
+        let messageIdCounter = 0;
+        
+        // BroadcastChannel for multi-tab support
+        let broadcast = null;
+        
+        // =============== UTILITIES ===============
+        function generateRoomCode() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let code = "";
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+        
+        function formatTime() {
+            const now = new Date();
+            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        function saveToLocalStorage() {
+            if (currentRoomCode) {
+                localStorage.setItem(`room_${currentRoomCode}`, JSON.stringify(messages));
+            }
+        }
+        
+        function loadFromLocalStorage(roomCode) {
+            const saved = localStorage.getItem(`room_${roomCode}`);
+            if (saved) {
+                messages = JSON.parse(saved);
+            } else {
+                messages = [];
+            }
+        }
+        
+        // =============== SCREENS ===============
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+        
+        function backToHome() {
+            showScreen('home-screen');
+            document.getElementById('header-room').style.display = 'none';
+        }
+        
+        // =============== CREATE GROUP ===============
+        function createGroup() {
+            currentRoomCode = generateRoomCode();
+            document.getElementById('generated-code').textContent = currentRoomCode;
+            showScreen('create-screen');
+        }
+        
+        function copyGeneratedCode() {
+            navigator.clipboard.writeText(currentRoomCode);
+            const btn = event.target;
+            const original = btn.textContent;
+            btn.textContent = "✅ Copied!";
+            setTimeout(() => btn.textContent = original, 2000);
+        }
+        
+        function joinCreatedRoom() {
+            initChat();
+        }
+        
+        // =============== JOIN ===============
+        function showJoinScreen() {
+            document.getElementById('join-code-input').value = "";
+            document.getElementById('join-error').style.display = "none";
+            showScreen('join-screen');
+        }
+        
+        function attemptJoin() {
+            const codeInput = document.getElementById('join-code-input').value.trim().toUpperCase();
+            if (!codeInput || codeInput.length < 6) {
+                showJoinError("Please enter a valid room code");
+                return;
+            }
+            
+            currentRoomCode = codeInput;
+            initChat();
+        }
+        
+        function showJoinError(msg) {
+            const errEl = document.getElementById('join-error');
+            errEl.textContent = msg;
+            errEl.style.display = "block";
+        }
+        
+        // =============== CHAT ===============
+        function initChat() {
+            if (!currentRoomCode) return;
+            
+            // Setup BroadcastChannel
+            if (broadcast) broadcast.close();
+            broadcast = new BroadcastChannel(`anonchat_${currentRoomCode}`);
+            
+            broadcast.onmessage = (event) => {
+                if (event.data.type === 'message') {
+                    addMessageToUI(event.data.message, false);
+                } else if (event.data.type === 'join') {
+                    addSystemMessage(`${event.data.nickname} joined the room`, 'join');
+                } else if (event.data.type === 'leave') {
+                    addSystemMessage(`${event.data.nickname} left the room`, 'leave');
+                }
+            };
+            
+            loadFromLocalStorage(currentRoomCode);
+            
+            // Show chat
+            showScreen('chat-screen');
+            document.getElementById('header-room').style.display = 'flex';
+            document.getElementById('header-code').textContent = currentRoomCode;
+            document.getElementById('chat-room-code').textContent = currentRoomCode;
+            
+            // Render existing messages
+            renderMessages();
+            
+            // Set nickname
+            if (!currentNickname) {
+                currentNickname = "Guest" + Math.floor(1000 + Math.random() * 9000);
+                showNicknameModal();
+            } else {
+                addSystemMessage(`${currentNickname} joined the room`, 'join');
+                broadcast.postMessage({
+                    type: 'join',
+                    nickname: currentNickname
+                });
+            }
+            
+            // Auto focus input
+            setTimeout(() => {
+                document.getElementById('message-input').focus();
+            }, 300);
+            
+            // Demo: add a few fake messages if room is empty
+            if (messages.length === 0) {
+                setTimeout(() => {
+                    if (messages.length === 0) {
+                        addFakeMessage("Anyone here?");
+                        setTimeout(() => {
+                            addFakeMessage("Just joined 👋");
+                        }, 1200);
+                    }
+                }, 800);
+            }
+        }
+        
+        function showNicknameModal() {
+            document.getElementById('nickname-modal').style.display = 'flex';
+            const nickInput = document.getElementById('nickname-input');
+            nickInput.value = currentNickname || "";
+            nickInput.focus();
+        }
+        
+        function hideNicknameModal() {
+            document.getElementById('nickname-modal').style.display = 'none';
+        }
+        
+        function setNickname() {
+            const input = document.getElementById('nickname-input').value.trim();
+            if (input) {
+                currentNickname = input;
+            }
+            hideNicknameModal();
+            
+            addSystemMessage(`${currentNickname} joined the room`, 'join');
+            if (broadcast) {
+                broadcast.postMessage({
+                    type: 'join',
+                    nickname: currentNickname
+                });
+            }
+        }
+        
+        function renderMessages() {
+            const container = document.getElementById('messages');
+            container.innerHTML = '';
+            
+            messages.forEach(msg => {
+                addMessageToUI(msg, true);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function addMessageToUI(msg, isInitialRender = false) {
+            const container = document.getElementById('messages');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${msg.isOwn ? 'own' : ''}`;
+            
+            if (msg.isSystem) {
+                messageDiv.classList.add('system');
+                messageDiv.innerHTML = msg.text;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-header">
+                        <span style="font-weight: 500;">${msg.nickname}</span>
+                    </div>
+                    <div class="message-content">${msg.text}</div>
+                    <div class="timestamp">${msg.time}</div>
+                `;
+            }
+            
+            container.appendChild(messageDiv);
+            
+            if (!isInitialRender) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+        
+        function addSystemMessage(text, type = 'info') {
+            const msg = {
+                id: ++messageIdCounter,
+                isSystem: true,
+                text: text,
+                time: formatTime()
+            };
+            messages.push(msg);
+            addMessageToUI(msg);
+            saveToLocalStorage();
+        }
+        
+        function addFakeMessage(text) {
+            const fakeNick = simulatedUsers[Math.floor(Math.random() * simulatedUsers.length)];
+            const msg = {
+                id: ++messageIdCounter,
+                nickname: fakeNick,
+                text: text,
+                time: formatTime(),
+                isOwn: false
+            };
+            messages.push(msg);
+            addMessageToUI(msg);
+            saveToLocalStorage();
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            
+            if (!text || !currentRoomCode) return;
+            
+            const msg = {
+                id: ++messageIdCounter,
+                nickname: currentNickname,
+                text: text,
+                time: formatTime(),
+                isOwn: true
+            };
+            
+            messages.push(msg);
+            addMessageToUI(msg);
+            saveToLocalStorage();
+            
+            // Broadcast to other tabs
+            if (broadcast) {
+                broadcast.postMessage({
+                    type: 'message',
+                    message: { ...msg, isOwn: false }
+                });
+            }
+            
+            input.value = '';
+            
+            // Simulate reply occasionally
+            if (Math.random() > 0.7) {
+                setTimeout(() => {
+                    const replies = ["Got it", "😂", "Same here", "Interesting", "True"];
+                    addFakeMessage(replies[Math.floor(Math.random() * replies.length)]);
+                }, 900);
+            }
+        }
+        
+        function copyRoomCode() {
+            if (!currentRoomCode) return;
+            navigator.clipboard.writeText(currentRoomCode);
+            
+            const headerCode = document.getElementById('header-code');
+            const original = headerCode.style.background;
+            headerCode.style.background = '#22c55e';
+            headerCode.style.color = 'white';
+            
+            setTimeout(() => {
+                headerCode.style.background = '';
+                headerCode.style.color = '';
+            }, 1200);
+        }
+        
+        function leaveRoom() {
+            if (confirm("Leave this room?")) {
+                if (broadcast) {
+                    broadcast.postMessage({
+                        type: 'leave',
+                        nickname: currentNickname
+                    });
+                    broadcast.close();
+                }
+                backToHome();
+                currentRoomCode = null;
+                messages = [];
+            }
+        }
+        
+        function showRoomInfo() {
+            document.getElementById('modal-room-code').textContent = currentRoomCode;
+            document.getElementById('modal-participants').textContent = "Multiple tabs supported";
+            document.getElementById('room-modal').style.display = 'flex';
+        }
+        
+        function hideRoomModal() {
+            document.getElementById('room-modal').style.display = 'none';
+        }
+        
+        // =============== KEYBOARD ===============
+        function setupKeyboard() {
+            document.getElementById('message-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Global escape support
+            document.addEventListener('keydown', function(e) {
+                if (e.key === "Escape") {
+                    const modals = document.querySelectorAll('.modal');
+                    for (let modal of modals) {
+                        if (modal.style.display === 'flex') {
+                            modal.style.display = 'none';
+                            return;
+                        }
+                    }
+                }
+            });
+        }
+        
+        // =============== INITIALIZE ===============
+        function init() {
+            setupKeyboard();
+            
+            // Make join input uppercase
+            const joinInput = document.getElementById('join-code-input');
+            joinInput.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+            
+            // Welcome message in console
+            console.log('%cAnonChat ready! Open multiple tabs to test multi-user chat.', 'color: #6366f1; font-size: 14px;');
+        }
+        
+        // Start the app
+        window.onload = init;
+    </script>
+</body>
+</html>
