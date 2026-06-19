@@ -3,666 +3,517 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Yomi Chat Rooms - Connect anonymously and instantly in secure group chats.">
-    <title>Yomi Chat Rooms • Connect Anonymously</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>GroupChat</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
-        
-        :root {
-            --accent: 139 92 246;
-        }
-        
-        .tail-container {
-            font-family: 'Inter', system_ui, sans-serif;
-        }
-        
-        .logo-font {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(16px);
-        }
-
-        .hero-bg {
-            background: radial-gradient(at center bottom, rgba(139, 92, 246, 0.3), transparent 70%);
-        }
-
-        .message-bubble {
-            max-width: 75%;
-            padding: 12px 18px;
-            border-radius: 20px;
-            position: relative;
-        }
-        
-        .message-mine {
-            background: rgb(139 92 246);
-            border-bottom-right-radius: 4px;
-        }
-        
-        .message-other {
-            background: rgba(255,255,255,0.1);
-            border-bottom-left-radius: 4px;
-        }
-
-        .chat-container {
-            scrollbar-width: thin;
-            scrollbar-color: rgb(139 92 246) #1f2937;
-        }
-
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            animation: floatParticle 25s linear infinite;
-            opacity: 0.15;
-        }
-
-        @keyframes floatParticle {
-            0% { transform: translateY(100vh) scale(1); }
-            100% { transform: translateY(-100vh) scale(0.5); }
-        }
-
-        .typing-indicator {
-            display: flex;
-            gap: 4px;
-        }
-        
-        .typing-dot {
-            width: 6px;
-            height: 6px;
-            background: #a5b4fc;
-            border-radius: 50%;
-            animation: typingBounce 1.2s infinite;
-        }
-        
-        .typing-dot:nth-child(2) { animation-delay: 150ms; }
-        .typing-dot:nth-child(3) { animation-delay: 300ms; }
-        
-        @keyframes typingBounce {
-            0%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-6px); }
-        }
-
-        .neon-text {
-            text-shadow: 0 0 10px rgb(167 139 250),
-                        0 0 20px rgb(167 139 250);
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap');
+        body { font-family: 'Inter', system_ui, sans-serif; }
+        .message { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-container { scrollbar-width: thin; scrollbar-color: #4b5563 #1f2937; }
+        .chat-container::-webkit-scrollbar { width: 6px; }
+        .chat-container::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
     </style>
 </head>
-<body class="tail-container bg-zinc-950 text-white overflow-hidden h-screen">
-    <!-- LANDING SCREEN -->
-    <div id="landing-screen" class="flex flex-col h-screen">
-        <!-- Navbar -->
-        <nav class="border-b border-white/10 bg-zinc-950/80 backdrop-blur-md z-50">
-            <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-                <div class="flex items-center gap-x-3">
-                    <div class="w-9 h-9 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-violet-500/50">
-                        👁️
-                    </div>
-                    <div>
-                        <span class="logo-font text-3xl font-semibold tracking-tighter neon-text">yomi</span>
+<body class="bg-zinc-950 text-zinc-100">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div class="w-72 bg-zinc-900 border-r border-zinc-800 flex flex-col">
+            <!-- Header -->
+            <div class="p-4 border-b border-zinc-800 flex items-center gap-3">
+                <div class="w-9 h-9 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-inner">G</div>
+                <div>
+                    <h1 class="font-semibold text-2xl tracking-tighter">GroupChat</h1>
+                    <p class="text-emerald-400 text-xs flex items-center gap-1"><span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span> Live Demo</p>
+                </div>
+            </div>
+
+            <!-- User Info -->
+            <div class="p-4 border-b border-zinc-800">
+                <div class="flex items-center gap-3">
+                    <div id="user-avatar" onclick="changeUsername()" 
+                         class="w-11 h-11 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-2xl flex items-center justify-center text-2xl cursor-pointer shadow-md">👤</div>
+                    <div class="flex-1">
+                        <div id="username-display" class="font-semibold text-lg">You</div>
+                        <div class="flex items-center gap-1 text-emerald-400 text-sm">
+                            <div class="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                            online
+                        </div>
                     </div>
                 </div>
-                <div class="flex items-center gap-x-8 text-sm">
-                    <a href="#" onclick="showSection('features')" class="hover:text-violet-400 transition-colors">Features</a>
-                    <a href="#" onclick="showSection('about')" class="hover:text-violet-400 transition-colors">About</a>
-                    <button onclick="createRoomDemo()" 
-                            class="px-6 py-2.5 bg-white text-zinc-900 font-medium rounded-2xl hover:bg-white/90 transition-all active:scale-95">
-                        Create Room
+            </div>
+
+            <!-- Groups -->
+            <div class="flex-1 overflow-y-auto">
+                <div class="px-4 pt-6 pb-3">
+                    <div class="flex items-center justify-between mb-4 px-1">
+                        <h2 class="uppercase text-xs font-semibold tracking-widest text-zinc-400">Groups</h2>
+                        <button onclick="createGroup()" 
+                                class="flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 transition-colors text-blue-400 hover:text-blue-300 text-sm font-medium px-4 py-2 rounded-2xl">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>New</span>
+                        </button>
+                    </div>
+
+                    <div id="groups-list" class="space-y-1 pr-2"></div>
+                </div>
+            </div>
+
+            <!-- Join -->
+            <div class="p-5 border-t border-zinc-800 bg-zinc-950">
+                <div class="text-xs uppercase tracking-widest text-zinc-400 mb-3 font-medium">Join with code</div>
+                <div class="flex gap-2">
+                    <input id="join-code" type="text" maxlength="8"
+                           placeholder="ABC12345"
+                           class="flex-1 bg-zinc-900 border border-zinc-700 focus:border-blue-500 rounded-3xl px-5 py-3 text-sm font-mono focus:outline-none">
+                    <button onclick="joinGroup()" 
+                            class="bg-white text-zinc-900 hover:bg-zinc-100 px-7 font-semibold rounded-3xl text-sm">Join</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat -->
+        <div class="flex-1 flex flex-col">
+            <!-- Chat Header -->
+            <div id="chat-header" class="h-16 bg-zinc-900 border-b border-zinc-800 px-6 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div id="group-icon" class="w-11 h-11 rounded-3xl flex items-center justify-center text-3xl shadow-inner"></div>
+                    <div>
+                        <div id="group-name" class="font-semibold text-xl">Welcome to GroupChat</div>
+                        <div id="group-info" class="text-zinc-400 text-sm font-mono">Select or create a group</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-6 text-zinc-400">
+                    <button onclick="toggleMembers()" class="hover:text-zinc-100 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-users"></i>
+                        <span class="text-sm hidden md:inline">Members</span>
+                    </button>
+                    <button onclick="copyGroupCode()" class="flex items-center gap-2 hover:text-white transition-colors">
+                        <i class="fa-solid fa-link"></i>
+                        <span id="current-code-display" class="font-mono text-sm hidden sm:inline"></span>
                     </button>
                 </div>
             </div>
-        </nav>
 
-        <!-- Hero -->
-        <div class="flex-1 flex items-center hero-bg relative overflow-hidden">
-            <!-- Background particles -->
-            <div id="particles" class="absolute inset-0 pointer-events-none"></div>
-            
-            <div class="max-w-5xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center relative z-10">
-                <div class="space-y-8">
-                    <div class="inline-flex items-center gap-x-2 bg-white/5 border border-white/10 rounded-3xl px-5 py-2 text-sm">
-                        <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                        <span class="font-medium">10,458 chatting now</span>
-                    </div>
-                    
-                    <h1 class="text-6xl md:text-7xl font-bold tracking-tighter leading-none logo-font neon-text">
-                        Connect.<br>
-                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400">Anonymously.</span>
-                    </h1>
-                    
-                    <p class="text-xl text-zinc-400 max-w-md">
-                        Instant group chats. No sign-up. No traces. 
-                        Just pure anonymous conversations.
-                    </p>
-                    
-                    <div class="flex flex-wrap gap-4">
-                        <button onclick="createRoomDemo()" 
-                                class="px-8 py-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-3xl font-semibold text-lg flex items-center gap-x-3 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-violet-500/30">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>Create Room</span>
-                        </button>
-                        
-                        <button onclick="showJoinModal()" 
-                                class="px-8 py-4 border border-white/30 hover:border-white/60 rounded-3xl font-semibold text-lg flex items-center gap-x-3 transition-all">
-                            <i class="fa-solid fa-door-open"></i>
-                            <span>Join Room</span>
-                        </button>
-                    </div>
-                    
-                    <div class="flex items-center gap-x-8 text-sm text-zinc-400 pt-6">
-                        <div class="flex items-center gap-x-2">
-                            <i class="fa-solid fa-lock text-emerald-400"></i>
-                            <span>End-to-end ready</span>
-                        </div>
-                        <div class="flex items-center gap-x-2">
-                            <i class="fa-solid fa-users"></i>
-                            <span>Up to 100 people</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Preview Card -->
-                <div class="hidden md:flex justify-end">
-                    <div class="glass border border-white/10 rounded-3xl p-2 w-full max-w-xs shadow-2xl">
-                        <div class="bg-zinc-900 rounded-3xl p-6 space-y-6">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-x-3">
-                                    <div class="w-8 h-8 bg-gradient-to-br from-amber-400 to-red-400 rounded-2xl"></div>
-                                    <div>
-                                        <div class="font-medium text-sm">CyberPunk Lounge</div>
-                                        <div class="text-emerald-400 text-xs flex items-center gap-x-1">
-                                            <span class="w-2 h-2 bg-current rounded-full animate-pulse"></span>
-                                            47 online
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="text-xs bg-white/10 px-3 py-1 rounded-2xl">CODE: X7K9P2M4</div>
-                            </div>
-                            
-                            <div class="space-y-4 text-sm max-h-64 overflow-hidden">
-                                <div class="flex gap-3">
-                                    <div class="text-cyan-400 font-mono text-xs w-6">09:41</div>
-                                    <div>
-                                        <span class="text-violet-300">@voidwalker</span>
-                                        <span class="ml-2 text-zinc-300">This new UI is insane 🔥</span>
-                                    </div>
-                                </div>
-                                <div class="flex gap-3">
-                                    <div class="text-cyan-400 font-mono text-xs w-6">09:42</div>
-                                    <div class="text-zinc-300">Anyone into synthwave tonight?</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Floating badges -->
-            <div class="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-8 text-xs uppercase tracking-widest opacity-70">
-                <div class="flex items-center gap-x-2">
-                    <i class="fa-solid fa-bolt"></i>
-                    <span>Instant</span>
-                </div>
-                <div class="flex items-center gap-x-2">
-                    <i class="fa-solid fa-shield-halved"></i>
-                    <span>Anonymous</span>
-                </div>
-                <div class="flex items-center gap-x-2">
-                    <i class="fa-solid fa-infinity"></i>
-                    <span>Unlimited</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- JOIN MODAL -->
-    <div id="join-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-center justify-center">
-        <div class="glass border border-white/10 rounded-3xl w-full max-w-md mx-4 p-8">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-semibold logo-font">Join Room</h2>
-                <button onclick="hideJoinModal()" class="text-zinc-400 hover:text-white text-2xl leading-none">×</button>
-            </div>
-            
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-sm text-zinc-400 mb-2">ROOM CODE</label>
-                    <input id="room-code-input" 
-                           type="text" 
-                           maxlength="10"
-                           placeholder="Enter 8-10 character code"
-                           class="w-full bg-zinc-900 border border-white/20 focus:border-violet-400 rounded-2xl px-6 py-5 text-2xl font-mono tracking-widest outline-none">
-                </div>
-                
-                <button onclick="joinRoomDemo()" 
-                        class="w-full py-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-3xl font-semibold text-xl">
-                    JOIN CHAT
-                </button>
-                
-                <p class="text-center text-xs text-zinc-500">Rooms are temporary and auto-expire after 24 hours</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- CHAT SCREEN -->
-    <div id="chat-screen" class="hidden h-screen flex flex-col">
-        <!-- Chat Header -->
-        <div class="bg-zinc-900 border-b border-white/10 px-6 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-x-4">
-                <button onclick="leaveRoom()" 
-                        class="w-9 h-9 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 rounded-2xl transition-colors">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </button>
-                
-                <div>
-                    <div class="flex items-center gap-x-3">
-                        <div id="room-name" class="font-semibold text-xl">CyberPunk Lounge</div>
-                        <div id="room-code-display" 
-                             onclick="copyRoomCode()"
-                             class="font-mono text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded-2xl cursor-pointer transition-colors flex items-center gap-x-1">
-                            <span>X7K9P2M4</span>
-                            <i class="fa-solid fa-copy text-xs"></i>
-                        </div>
-                    </div>
-                    <div class="flex items-center text-emerald-400 text-xs gap-x-1.5">
-                        <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                        <span id="online-count">47 online</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-x-2">
-                <button onclick="toggleSound()" 
-                        id="sound-btn"
-                        class="w-9 h-9 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 rounded-2xl transition-colors">
-                    <i class="fa-solid fa-volume-high"></i>
-                </button>
-                <button onclick="clearChat()" 
-                        class="w-9 h-9 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 rounded-2xl transition-colors">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-                <button onclick="showRoomInfo()" 
-                        class="w-9 h-9 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 rounded-2xl transition-colors">
-                    <i class="fa-solid fa-info"></i>
-                </button>
-            </div>
-        </div>
-        
-        <div class="flex flex-1 overflow-hidden">
             <!-- Messages Area -->
-            <div class="flex-1 flex flex-col">
-                <div id="messages" 
-                     class="flex-1 p-6 overflow-y-auto chat-container space-y-6 bg-[radial-gradient(#27272a_1px,transparent_1px)] bg-[length:40px_40px]">
-                    <!-- Messages populated by JS -->
-                </div>
-                
-                <!-- Input Area -->
-                <div class="border-t border-white/10 bg-zinc-900 p-4">
-                    <div class="max-w-3xl mx-auto">
-                        <!-- Typing indicator -->
-                        <div id="typing-indicator" class="hidden mb-2 px-4 text-xs text-zinc-400 flex items-center gap-x-2">
-                            <span id="typing-user">neo42</span> is typing
-                            <div class="typing-indicator">
-                                <div class="typing-dot"></div>
-                                <div class="typing-dot"></div>
-                                <div class="typing-dot"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex gap-x-3">
-                            <input id="message-input" 
-                                   type="text"
-                                   placeholder="Type a message..."
-                                   class="flex-1 bg-zinc-800 border border-white/10 focus:border-violet-400 rounded-3xl px-7 py-5 outline-none text-base"
-                                   onkeydown="if(event.key === 'Enter') sendMessage()">
-                            <button onclick="sendMessage()" 
-                                    class="w-14 h-14 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-3xl flex items-center justify-center text-2xl hover:scale-110 transition-transform">
-                                <i class="fa-solid fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <div id="messages" class="flex-1 overflow-y-auto chat-container p-6 space-y-7 bg-[radial-gradient(#27272a_1px,transparent_1px)] bg-[length:30px_30px]">
             </div>
-            
-            <!-- Sidebar (desktop only) -->
-            <div class="hidden lg:flex w-80 border-l border-white/10 bg-zinc-900/70 backdrop-blur flex-col">
-                <div class="p-6">
-                    <div class="uppercase text-xs tracking-widest text-zinc-500 mb-4">Room Members</div>
-                    <div id="users-list" class="space-y-3 text-sm">
-                        <!-- Populated by JS -->
+
+            <!-- Message Input -->
+            <div class="bg-zinc-900 border-t border-zinc-800 p-5">
+                <div id="preview" class="hidden mb-4"></div>
+                
+                <div class="flex items-end gap-3">
+                    <div class="flex gap-1">
+                        <label onclick="document.getElementById('image-input').click()" 
+                               class="w-12 h-12 hover:bg-zinc-800 transition-colors flex items-center justify-center text-zinc-400 hover:text-blue-400 rounded-3xl cursor-pointer">
+                            <i class="fa-solid fa-image text-2xl"></i>
+                        </label>
+                        <input id="image-input" type="file" accept="image/*" class="hidden" onchange="handleImageSelect(event)">
+                        
+                        <button onclick="startVoiceRecord()" 
+                                class="w-12 h-12 hover:bg-zinc-800 transition-colors flex items-center justify-center text-zinc-400 hover:text-rose-400 rounded-3xl">
+                            <i class="fa-solid fa-microphone text-2xl"></i>
+                        </button>
                     </div>
+                    
+                    <div class="flex-1">
+                        <input id="message-input" 
+                               type="text"
+                               placeholder="Message #general..."
+                               onkeydown="if(event.key === 'Enter' &amp;&amp; !event.shiftKey) { event.preventDefault(); sendMessage(); }"
+                               class="w-full bg-zinc-800 border border-transparent focus:border-blue-500 rounded-3xl px-7 py-4 text-[17px] focus:outline-none">
+                    </div>
+                    
+                    <button onclick="sendMessage()" 
+                            class="w-12 h-12 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all rounded-3xl flex items-center justify-center text-white shadow-lg">
+                        <i class="fa-solid fa-paper-plane -rotate-45"></i>
+                    </button>
                 </div>
                 
-                <div class="mt-auto border-t border-white/10 p-6">
-                    <div onclick="leaveRoom()" 
-                         class="flex items-center gap-x-3 text-red-400 hover:text-red-300 cursor-pointer transition-colors">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        <span class="font-medium">Leave Room</span>
-                    </div>
-                </div>
+                <div class="text-center text-[10px] text-zinc-500 mt-4">Open multiple tabs to simulate different users • Changes sync instantly</div>
+            </div>
+        </div>
+
+        <!-- Members Panel -->
+        <div id="members-panel" class="w-80 bg-zinc-900 border-l border-zinc-800 hidden md:flex flex-col">
+            <div class="p-6 border-b border-zinc-800">
+                <h3 class="font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-users"></i>
+                    Members in room
+                </h3>
+            </div>
+            <div id="members-list" class="flex-1 p-6 space-y-6 overflow-auto">
+                <!-- JS populated -->
             </div>
         </div>
     </div>
 
-    <!-- TOAST -->
-    <div id="toast" class="hidden fixed bottom-6 right-6 bg-zinc-800 border border-violet-400 text-white px-6 py-3 rounded-3xl flex items-center gap-x-3 shadow-2xl">
-        <i class="fa-solid fa-check-circle text-emerald-400"></i>
-        <span id="toast-text" class="text-sm"></span>
+    <!-- Voice Recorder -->
+    <div id="voice-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center">
+        <div class="bg-zinc-900 rounded-3xl w-full max-w-sm mx-4">
+            <div class="p-10 text-center">
+                <div class="mx-auto w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mb-8">
+                    <div id="voice-pulse" class="w-12 h-12 bg-rose-500 rounded-full animate-ping"></div>
+                </div>
+                
+                <div id="recording-timer" class="font-mono text-6xl tracking-tighter text-white mb-10">00:00</div>
+                
+                <div class="flex justify-center gap-6">
+                    <button onclick="cancelVoiceRecord()" 
+                            class="px-8 py-4 rounded-3xl border border-zinc-700 hover:bg-zinc-800 text-zinc-300 flex items-center gap-2">
+                        <i class="fa-solid fa-xmark"></i> Cancel
+                    </button>
+                    <button onclick="stopVoiceRecord()" 
+                            class="px-10 py-4 bg-rose-500 hover:bg-rose-600 rounded-3xl text-white font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-stop"></i> Send
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Tailwind script already loaded via CDN
-        function initTailwind() {
-            // Already configured via script tag
-        }
-        
-        // Fake users
-        let currentUsername = "guest_" + Math.floor(Math.random() * 9999);
-        let currentRoomCode = "";
-        let messages = [];
-        let users = [
-            { name: "voidwalker", color: "text-cyan-400" },
-            { name: "neonfox", color: "text-pink-400" },
-            { name: "shadowbyte", color: "text-amber-400" },
-            { name: currentUsername, color: "text-violet-400" }
-        ];
-        let soundEnabled = true;
-        
-        // Sample messages
-        const sampleMessages = [
-            { user: "voidwalker", text: "Anyone tried the new Grok 4 model?", time: "09:41" },
-            { user: "neonfox", text: "This interface is buttery smooth", time: "09:42" },
-            { user: "shadowbyte", text: "Loving the glassmorphism here", time: "09:43" }
-        ];
-        
-        // Generate room code
-        function generateRoomCode() {
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            let code = "";
-            for (let i = 0; i < 8; i++) {
-                code += chars[Math.floor(Math.random() * chars.length)];
-            }
-            return code;
-        }
-        
-        // Create particles
-        function createParticles() {
-            const container = document.getElementById('particles');
-            for (let i = 0; i < 60; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.width = Math.random() * 5 + 2 + 'px';
-                particle.style.height = particle.style.width;
-                particle.style.left = Math.random() * 100 + 'vw';
-                particle.style.animationDuration = (Math.random() * 30 + 20) + 's';
-                particle.style.animationDelay = '-' + Math.random() * 40 + 's';
-                particle.style.background = `hsl(${Math.random() * 300 + 200}, 80%, 70%)`;
-                container.appendChild(particle);
+        // Globals
+        let currentUser = localStorage.getItem("username") || "You" + Math.floor(100 + Math.random() * 900);
+        let currentRoom = null;
+        let groups = JSON.parse(localStorage.getItem("groups") || "[]");
+        let messages = JSON.parse(localStorage.getItem("messages") || "{}");
+        const bc = new BroadcastChannel("groupchat_demo");
+
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let timerInterval = null;
+        let startRecordTime = 0;
+        let currentPreviewFile = null;
+
+        // Tailwind ready
+        function init() {
+            document.getElementById("username-display").textContent = currentUser;
+            renderGroups();
+            bc.onmessage = (e) => {
+                if (e.data.type === "message" && e.data.room === currentRoom) {
+                    if (!messages[currentRoom]) messages[currentRoom] = [];
+                    messages[currentRoom].push(e.data.msg);
+                    localStorage.setItem("messages", JSON.stringify(messages));
+                    renderMessages();
+                }
+            };
+            
+            // Welcome demo
+            if (!messages["DEMO42"]) {
+                messages["DEMO42"] = [
+                    {id: 1, user: "Sarah", type: "text", content: "Hi team! How's the new project going?", time: Date.now() - 1000000},
+                    {id: 2, user: "Alex", type: "text", content: "Just pushed some updates 🚀", time: Date.now() - 900000}
+                ];
+                groups.push({name: "Product Launch", code: "DEMO42"});
+                localStorage.setItem("groups", JSON.stringify(groups));
+                localStorage.setItem("messages", JSON.stringify(messages));
             }
         }
-        
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-text').textContent = message;
-            toast.classList.remove('hidden');
-            toast.style.transform = 'translateY(20px)';
-            toast.style.opacity = '0';
+
+        function renderGroups() {
+            const list = document.getElementById("groups-list");
+            list.innerHTML = "";
             
-            setTimeout(() => {
-                toast.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                toast.style.transform = 'translateY(0)';
-                toast.style.opacity = '1';
-            }, 10);
-            
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(20px)';
-                setTimeout(() => toast.classList.add('hidden'), 300);
-            }, 2800);
-        }
-        
-        function copyRoomCode() {
-            if (!currentRoomCode) return;
-            navigator.clipboard.writeText(currentRoomCode);
-            showToast("Room code copied!");
-        }
-        
-        function createRoomDemo() {
-            currentRoomCode = generateRoomCode();
-            document.getElementById('room-code-display').innerHTML = `
-                <span>${currentRoomCode}</span>
-                <i class="fa-solid fa-copy text-xs"></i>
-            `;
-            document.getElementById('room-name').textContent = "New Anonymous Room";
-            enterChat();
-        }
-        
-        function showJoinModal() {
-            document.getElementById('join-modal').classList.remove('hidden');
-            document.getElementById('room-code-input').focus();
-        }
-        
-        function hideJoinModal() {
-            document.getElementById('join-modal').classList.add('hidden');
-        }
-        
-        function joinRoomDemo() {
-            const input = document.getElementById('room-code-input').value.trim().toUpperCase();
-            if (input.length < 6) {
-                showToast("Please enter a valid room code");
+            if (groups.length === 0) {
+                list.innerHTML = `<div class="opacity-40 text-center py-12 text-sm">No groups joined yet.<br>Create one above.</div>`;
                 return;
             }
-            currentRoomCode = input;
-            document.getElementById('room-code-display').innerHTML = `
-                <span>${currentRoomCode}</span>
-                <i class="fa-solid fa-copy text-xs"></i>
-            `;
-            document.getElementById('room-name').textContent = "Joined Room";
-            hideJoinModal();
-            enterChat();
+            
+            groups.forEach(group => {
+                const active = group.code === currentRoom;
+                const div = document.createElement("div");
+                div.className = `group px-5 py-4 rounded-3xl cursor-pointer flex gap-4 items-center transition-all ${active ? 'bg-zinc-800 shadow-inner' : 'hover:bg-zinc-800/70'}`;
+                div.innerHTML = `
+                    <div class="w-11 h-11 bg-gradient-to-br from-blue-500 to-cyan-400 text-white rounded-2xl flex items-center justify-center text-3xl font-light">${group.name[0].toUpperCase()}</div>
+                    <div class="flex-1 overflow-hidden">
+                        <div class="font-medium truncate">${group.name}</div>
+                        <div class="text-xs font-mono text-zinc-500">${group.code}</div>
+                    </div>
+                `;
+                div.onclick = () => switchToRoom(group.code, group.name);
+                list.appendChild(div);
+            });
         }
-        
-        function enterChat() {
-            document.getElementById('landing-screen').classList.add('hidden');
-            document.getElementById('chat-screen').classList.remove('hidden');
+
+        function createGroup() {
+            const name = prompt("Group name?", "Marketing Sync");
+            if (!name || !name.trim()) return;
             
-            // Load sample messages
-            const messagesContainer = document.getElementById('messages');
-            messagesContainer.innerHTML = '';
+            const code = (Math.random().toString(36) + "000000").slice(2, 10).toUpperCase();
             
-            sampleMessages.forEach(msg => {
-                addMessageToUI(msg.user, msg.text, msg.time, false);
+            groups.unshift({ name: name.trim(), code });
+            localStorage.setItem("groups", JSON.stringify(groups));
+            renderGroups();
+            switchToRoom(code, name.trim());
+        }
+
+        function joinGroup() {
+            let code = document.getElementById("join-code").value.trim().toUpperCase();
+            if (!code) return alert("Please enter a group code");
+            
+            if (groups.find(g => g.code === code)) {
+                const group = groups.find(g => g.code === code);
+                switchToRoom(code, group.name);
+                document.getElementById("join-code").value = "";
+                return;
+            }
+            
+            const name = prompt("Name for this group?", "Joined Group");
+            if (!name) return;
+            
+            groups.unshift({name: name.trim(), code});
+            localStorage.setItem("groups", JSON.stringify(groups));
+            renderGroups();
+            switchToRoom(code, name.trim());
+            document.getElementById("join-code").value = "";
+        }
+
+        function switchToRoom(code, name) {
+            currentRoom = code;
+            document.getElementById("group-name").textContent = name || "Unnamed";
+            document.getElementById("group-info").innerHTML = `Code: <span class="font-mono">${code}</span>`;
+            document.getElementById("current-code-display").textContent = code;
+            document.getElementById("group-icon").innerHTML = name ? name[0].toUpperCase() : "💬";
+            renderGroups();
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const container = document.getElementById("messages");
+            container.innerHTML = "";
+            
+            if (!currentRoom || !messages[currentRoom] || messages[currentRoom].length === 0) {
+                container.innerHTML = `
+                <div class="h-full flex flex-col justify-center items-center text-center">
+                    <div class="text-7xl mb-6 opacity-30">💬</div>
+                    <p class="text-xl font-light text-zinc-400">No messages yet</p>
+                    <p class="text-zinc-500 mt-2 max-w-[260px]">Send the first message or open another tab to simulate teammates</p>
+                </div>`;
+                return;
+            }
+            
+            messages[currentRoom].forEach(msg => {
+                const mine = msg.user === currentUser;
+                const bubble = document.createElement("div");
+                bubble.className = `flex ${mine ? 'justify-end' : 'justify-start'} message`;
+                
+                let html = '';
+                
+                if (msg.type === "text") {
+                    html = `
+                    <div class="${mine ? 'bg-blue-600 text-white' : 'bg-zinc-800'} rounded-3xl px-6 py-3.5 max-w-[280px] md:max-w-md">
+                        ${!mine ? `<div class="text-blue-400 text-xs mb-1">${msg.user}</div>` : ''}
+                        <div class="leading-relaxed">${msg.content}</div>
+                        <div class="text-[10px] mt-2 opacity-70 text-right">${new Date(msg.time).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}</div>
+                    </div>`;
+                } else if (msg.type === "image") {
+                    html = `
+                    <div class="${mine ? 'text-right' : ''} max-w-[260px]">
+                        ${!mine ? `<div class="text-xs text-zinc-400 mb-1">${msg.user}</div>` : ''}
+                        <img src="${msg.content}" class="rounded-3xl border border-zinc-700 max-h-72 object-contain" />
+                        <div class="text-[10px] text-zinc-400 mt-2">${new Date(msg.time).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}</div>
+                    </div>`;
+                } else if (msg.type === "voice") {
+                    html = `
+                    <div class="${mine ? 'text-right' : ''}">
+                        ${!mine ? `<div class="text-xs text-zinc-400 mb-1">${msg.user}</div>` : ''}
+                        <div onclick="playVoice(this)" data-src="${msg.content}" class="cursor-pointer bg-zinc-800 hover:bg-zinc-700 transition-colors rounded-3xl px-5 py-4 inline-flex items-center gap-4">
+                            <i class="fa-solid fa-play text-blue-400"></i>
+                            <span class="text-sm">Voice message</span>
+                        </div>
+                        <div class="text-[10px] mt-1 text-zinc-400">${new Date(msg.time).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}</div>
+                    </div>`;
+                }
+                
+                bubble.innerHTML = html;
+                container.appendChild(bubble);
             });
             
-            // Add welcome message
-            setTimeout(() => {
-                addMessageToUI("System", `Welcome to the room! You joined as <span class="font-medium">${currentUsername}</span>`, "", true);
-            }, 600);
-            
-            // Populate users
-            renderUsers();
-            
-            // Simulate new messages
-            simulateIncomingMessages();
+            container.scrollTop = container.scrollHeight;
         }
-        
-        function addMessageToUI(username, text, time, isSystem = false) {
-            const container = document.getElementById('messages');
-            const isMine = username === currentUsername;
+
+        function sendMessage() {
+            if (!currentRoom) return alert("Please select a group first");
             
-            const msgHTML = `
-                <div class="flex ${isMine ? 'justify-end' : 'justify-start'} group">
-                    ${!isMine && !isSystem ? `
-                    <div class="text-xs text-zinc-500 w-20 text-right pr-3 pt-1 font-mono">
-                        ${time || new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-                    </div>` : ''}
-                    <div class="${isSystem ? 'mx-auto bg-white/10 text-center text-xs py-2 px-6 rounded-3xl' : isMine ? 'message-bubble message-mine text-white' : 'message-bubble message-other'}">
-                        ${!isMine && !isSystem ? `<div class="text-xs ${users.find(u => u.name === username)?.color || 'text-zinc-400'} mb-1">${username}</div>` : ''}
-                        <div>${text}</div>
-                        ${isMine ? `<div class="text-[10px] text-right text-violet-200/70 mt-1">${time || new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>` : ''}
+            const input = document.getElementById("message-input");
+            const text = input.value.trim();
+            
+            if (!messages[currentRoom]) messages[currentRoom] = [];
+            
+            if (text) {
+                const msg = {
+                    id: Date.now(),
+                    user: currentUser,
+                    type: "text",
+                    content: text,
+                    time: Date.now()
+                };
+                messages[currentRoom].push(msg);
+                broadcastMessage(msg);
+                input.value = "";
+            }
+            
+            if (currentPreviewFile) {
+                const msg = {
+                    id: Date.now(),
+                    user: currentUser,
+                    type: currentPreviewFile.type,
+                    content: currentPreviewFile.data,
+                    time: Date.now()
+                };
+                messages[currentRoom].push(msg);
+                broadcastMessage(msg);
+                clearPreview();
+            }
+            
+            localStorage.setItem("messages", JSON.stringify(messages));
+            renderMessages();
+        }
+
+        function broadcastMessage(msg) {
+            bc.postMessage({
+                type: "message",
+                room: currentRoom,
+                msg: msg
+            });
+        }
+
+        function handleImageSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                currentPreviewFile = {
+                    type: "image",
+                    data: ev.target.result
+                };
+                showPreview();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showPreview() {
+            const container = document.getElementById("preview");
+            container.classList.remove("hidden");
+            container.innerHTML = `
+                <div class="inline-flex items-center bg-zinc-800 rounded-3xl pl-3 pr-5 py-2 gap-4">
+                    <img src="${currentPreviewFile.data}" class="h-14 w-14 object-cover rounded-2xl">
+                    <div>
+                        <div class="text-sm">Image ready</div>
+                        <button onclick="clearPreview()" class="text-red-400 text-xs hover:underline">Remove</button>
                     </div>
                 </div>
             `;
-            
-            container.innerHTML += msgHTML;
-            container.scrollTop = container.scrollHeight;
         }
-        
-        function sendMessage() {
-            const input = document.getElementById('message-input');
-            const text = input.value.trim();
-            
-            if (!text) return;
-            
-            const now = new Date();
-            const time = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            
-            addMessageToUI(currentUsername, text, time);
-            
-            // Fake echo from another user
-            if (Math.random() > 0.6) {
-                setTimeout(() => {
-                    const randomUser = users[Math.floor(Math.random() * (users.length - 1))];
-                    const replies = ["Agreed.", "Haha true", "This is wild", "Yesss"];
-                    addMessageToUI(randomUser.name, replies[Math.floor(Math.random() * replies.length)], "");
-                }, 900);
+
+        function clearPreview() {
+            currentPreviewFile = null;
+            document.getElementById("preview").classList.add("hidden");
+        }
+
+        function startVoiceRecord() {
+            if (!currentRoom) {
+                alert("Join or create a group first");
+                return;
             }
             
-            input.value = '';
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                audioChunks = [];
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+                
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    currentPreviewFile = { type: "voice", data: url };
+                    showPreview();
+                    
+                    stream.getTracks().forEach(t => t.stop());
+                };
+                
+                mediaRecorder.start();
+                startRecordTime = Date.now();
+                document.getElementById("voice-modal").classList.remove("hidden");
+                
+                timerInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - startRecordTime) / 1000);
+                    const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+                    const s = String(elapsed % 60).padStart(2, '0');
+                    document.getElementById("recording-timer").textContent = `${m}:${s}`;
+                }, 300);
+            }).catch(() => alert("Could not access microphone"));
         }
-        
-        function renderUsers() {
-            const container = document.getElementById('users-list');
-            container.innerHTML = '';
+
+        function stopVoiceRecord() {
+            if (mediaRecorder) mediaRecorder.stop();
+            clearInterval(timerInterval);
+            document.getElementById("voice-modal").classList.add("hidden");
+        }
+
+        function cancelVoiceRecord() {
+            if (mediaRecorder) mediaRecorder.stop();
+            clearInterval(timerInterval);
+            document.getElementById("voice-modal").classList.add("hidden");
+            audioChunks = [];
+        }
+
+        function playVoice(el) {
+            const audio = new Audio(el.getAttribute("data-src"));
+            audio.play();
+        }
+
+        function changeUsername() {
+            const newName = prompt("Your display name:", currentUser);
+            if (newName && newName.trim()) {
+                currentUser = newName.trim();
+                localStorage.setItem("username", currentUser);
+                document.getElementById("username-display").textContent = currentUser;
+            }
+        }
+
+        function toggleMembers() {
+            const panel = document.getElementById("members-panel");
+            panel.classList.toggle("hidden");
             
-            users.forEach(user => {
-                const el = document.createElement('div');
-                el.className = `flex items-center gap-x-3 px-4 py-3 hover:bg-white/5 rounded-2xl cursor-default transition-colors`;
-                el.innerHTML = `
-                    <div class="w-8 h-8 bg-gradient-to-br from-violet-400 to-fuchsia-400 rounded-2xl flex items-center justify-center text-xs font-bold">👤</div>
+            const demoHTML = `
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 bg-emerald-500 text-white font-bold rounded-2xl flex items-center justify-center">SJ</div>
                     <div class="flex-1">
-                        <div class="${user.color}">${user.name}</div>
-                        <div class="text-emerald-400 text-xs">online</div>
+                        <div>Sarah Jones</div>
+                        <div class="text-xs text-emerald-400">online now</div>
                     </div>
-                `;
-                container.appendChild(el);
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 bg-amber-500 text-white font-bold rounded-2xl flex items-center justify-center">RK</div>
+                    <div class="flex-1">
+                        <div>Rahul Kumar</div>
+                        <div class="text-xs text-zinc-400">last active 2m ago</div>
+                    </div>
+                </div>`;
+            document.getElementById("members-list").innerHTML = demoHTML;
+        }
+
+        function copyGroupCode() {
+            if (!currentRoom) return;
+            navigator.clipboard.writeText(currentRoom).then(() => {
+                const orig = document.getElementById("current-code-display").textContent;
+                document.getElementById("current-code-display").textContent = "✅ Copied!";
+                setTimeout(() => {
+                    document.getElementById("current-code-display").textContent = orig;
+                }, 1800);
             });
         }
-        
-        function simulateIncomingMessages() {
-            let count = 0;
-            const interval = setInterval(() => {
-                if (count > 6 || !document.getElementById('chat-screen').classList.contains('hidden')) {
-                    // Only continue if still in chat
-                    if (Math.random() > 0.7) {
-                        const randomUser = users[Math.floor(Math.random() * users.length)];
-                        if (randomUser.name !== currentUsername) {
-                            const texts = ["This chat is addictive", "Who else is up late?", "Thoughts on AI?", "🔥", "lol"];
-                            addMessageToUI(randomUser.name, texts[Math.floor(Math.random() * texts.length)], "");
-                        }
-                    }
-                    count++;
-                } else {
-                    clearInterval(interval);
-                }
-            }, 6500);
-        }
-        
-        function leaveRoom() {
-            if (confirm("Leave this room?")) {
-                document.getElementById('chat-screen').classList.add('hidden');
-                document.getElementById('landing-screen').classList.remove('hidden');
-                // Reset state
-                messages = [];
-            }
-        }
-        
-        function clearChat() {
-            if (confirm("Clear entire chat history?")) {
-                document.getElementById('messages').innerHTML = '';
-                showToast("Chat cleared");
-            }
-        }
-        
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            const icon = document.getElementById('sound-btn').querySelector('i');
-            if (soundEnabled) {
-                icon.classList.remove('fa-volume-xmark');
-                icon.classList.add('fa-volume-high');
-            } else {
-                icon.classList.remove('fa-volume-high');
-                icon.classList.add('fa-volume-xmark');
-            }
-            showToast(soundEnabled ? "Sound enabled" : "Sound disabled");
-        }
-        
-        function showRoomInfo() {
-            showToast("Room will expire in 23h 14m");
-        }
-        
-        // Keyboard shortcuts
-        function handleGlobalKeys(e) {
-            if (e.metaKey && e.key === "k") {
-                e.preventDefault();
-                if (!document.getElementById('chat-screen').classList.contains('hidden')) {
-                    document.getElementById('message-input').focus();
-                }
-            }
-        }
-        
-        // Backend placeholder functions
-        function createRoom() {
-            // TODO: Integrate with Supabase / Firebase / Socket.io
-            // Example:
-            // const room = await supabase.from('rooms').insert({...})
-            console.log('%c[BACKEND] createRoom() called - integrate your realtime backend here', 'color: violet');
-        }
-        
-        function joinRoom(code) {
-            // TODO: Verify room exists and join via websocket
-            console.log('%c[BACKEND] joinRoom(' + code + ') called', 'color: violet');
-        }
-        
-        function sendMessageBackend(text) {
-            // TODO: Send via websocket / API
-            console.log('%c[BACKEND] sendMessage:', text, 'color: violet');
-        }
-        
-        function updateUsers() {
-            // TODO: Listen to realtime presence
-            console.log('%c[BACKEND] Presence updated', 'color: violet');
-        }
-        
-        // Initialize everything
-        function initializeApp() {
-            // Tailwind ready
-            createParticles();
-            
-            // Show landing
-            document.getElementById('landing-screen').classList.remove('hidden');
-            
-            // Demo username
-            console.log('%cYomi Chat Rooms initialized. Welcome, ' + currentUsername, 'color:#a5b4fc; font-family:monospace');
-            
-            // Keyboard listener
-            document.addEventListener('keydown', handleGlobalKeys);
-            
-            // Demo: auto focus input after some time if already in chat
-            setTimeout(() => {
-                const input = document.getElementById('message-input');
-                if (input) input.focus();
-            }, 2200);
-            
-            // Make it feel premium
-            console.log("%c🚀 Production-ready single file chat ready for Vercel!", "color: #c4b5fd; font-size: 13px");
-        }
-        
-        // Boot app
-        window.onload = initializeApp;
+
+        window.onload = () => {
+            init();
+        };
     </script>
 </body>
 </html>
